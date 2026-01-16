@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kit de Herramientas MPXA 2026 | Datos e IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Academic Tones -->
+    <!-- Palette: Background #F9FAFB (Cool Gray), Cards #FFFFFF, Text #1F2937, Accents: #3B82F6 (Blue), #10B981 (Green), #8B5CF6 (Purple) -->
+    
+    <!-- Application Structure Plan:
+        1. Hero Section: Introduces the context (MPXA 2026, Félix Arias) and the purpose (New Narratives).
+        2. Dashboard Controller: A central interactive area to filter tools by "Phase" (Ideation, Data, Production, Distribution). This matches the user's mental model of a workflow.
+        3. Strategic Landscape (Chart.js): A scatter plot visualizing "Learning Curve vs. Narrative Impact". This helps users decide where to invest their time based on ROI.
+        4. Tool Explorer (Grid): Detailed cards for each tool, dynamically filtered. Includes specific usage tips from the report.
+        5. Project Deliverables: A focused section on the specific requirements for "Datos Coruña" and the Master's Project, ensuring the app is actionable for students.
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. Workflow Filters: Goal -> Guide user through production stages. Method -> HTML Buttons with JS filtering. Justification -> Simple, intuitive navigation.
+        2. Tool Landscape Chart: Goal -> Compare tools by complexity and utility. Method -> Chart.js Scatter Plot. Interaction -> Tooltips show details, clicking filters the list. Justification -> Visualizes the ecosystem effectively.
+        3. Tool Cards: Goal -> Inform about specific tools. Method -> HTML/Tailwind Grid. Interaction -> Hover effects, category tags. Justification -> Clear, digestible content chunks.
+        4. Deliverables Checklist: Goal -> Organize requirements. Method -> Styled List. Justification -> Crucial information from the report (Pages 516-517).
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* warm gray-100 */
+            color: #1f2937;
+        }
+        h1, h2, h3 {
+            font-family: 'Merriweather', serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        .tool-card {
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .category-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-bold text-blue-900">MPXA<span class="text-blue-500">2026</span></span>
+                <span class="hidden sm:block text-gray-400">|</span>
+                <span class="hidden sm:block text-sm text-gray-600 font-medium">Herramientas de Datos e IA</span>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="#explorer" class="text-sm font-medium text-gray-700 hover:text-blue-600">Herramientas</a>
+                <a href="#landscape" class="text-sm font-medium text-gray-700 hover:text-blue-600">Análisis</a>
+                <a href="#projects" class="text-sm font-medium text-gray-700 hover:text-blue-600">Entregas</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-white border-b border-gray-200">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">Nuevas Narrativas: Datos e IA</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+                Una guía interactiva basada en la presentación de <span class="font-semibold text-blue-700">Félix Arias</span> para el MPXA. 
+                Explora el ecosistema de herramientas para transformar datos en historias, gestionar proyectos multimedia e integrar Inteligencia Artificial en tu flujo de trabajo.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="scrollToSection('explorer')" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition">
+                    Explorar Herramientas
+                </button>
+                <button onclick="scrollToSection('projects')" class="px-6 py-3 bg-white text-blue-600 border border-blue-200 font-semibold rounded-lg hover:bg-blue-50 transition">
+                    Ver Requisitos del Proyecto
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Strategic Landscape (Chart.js) -->
+    <section id="landscape" class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Panorama Estratégico</h2>
+                <p class="text-gray-600 max-w-3xl">
+                    Este gráfico analiza las herramientas mencionadas según su **Curva de Aprendizaje** y su **Potencial Narrativo/Técnico**. 
+                    Utiliza esto para decidir qué herramientas aprender según el tiempo disponible y el impacto deseado en tu proyecto.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <div class="chart-container">
+                    <canvas id="toolsScatterChart"></canvas>
+                </div>
+                <div class="mt-4 text-center text-sm text-gray-500 italic">
+                    Haz clic en los puntos del gráfico para filtrar la lista de herramientas abajo.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tool Explorer Section -->
+    <section id="explorer" class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Explorador de Recursos</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto mb-8">
+                    Filtra las herramientas según la fase de tu proyecto. Desde la limpieza de datos hasta la distribución final del reportaje.
+                </p>
+
+                <!-- Dynamic Filters -->
+                <div class="flex flex-wrap justify-center gap-2 mb-8" id="filterContainer">
+                    <button class="filter-btn active px-4 py-2 rounded-full bg-gray-800 text-white text-sm font-medium transition" data-filter="all">Todos</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 text-sm font-medium transition" data-filter="Visualización">Visualización</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 text-sm font-medium transition" data-filter="IA & Edición">IA & Edición</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 text-sm font-medium transition" data-filter="Organización">Organización</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 text-sm font-medium transition" data-filter="Distribución">Distribución</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 text-sm font-medium transition" data-filter="Técnico/Hosting">Hosting</button>
+                </div>
+            </div>
+
+            <!-- Grid Container -->
+            <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cards will be injected here via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Deliverables Section -->
+    <section id="projects" class="py-16 bg-blue-900 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Entregas y Práctica</h2>
+                <p class="text-blue-200">
+                    Información crucial extraída de las diapositivas 516-517 sobre las entregas requeridas.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Option A -->
+                <div class="bg-blue-800 rounded-xl p-8 border border-blue-700 shadow-xl">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-blue-500 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mr-3">A</span>
+                        <h3 class="text-xl font-bold">Proyecto "Datos Coruña"</h3>
+                    </div>
+                    <ul class="space-y-4 text-blue-100">
+                        <li class="flex items-start">
+                            <span class="mr-2 text-blue-400">➤</span>
+                            <span>Desarrollo de un proyecto de datos y narrativa multimedia enfocado en A Coruña.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-blue-400">➤</span>
+                            <span><strong>Envío:</strong> Enlace al proyecto finalizado.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-blue-400">➤</span>
+                            <span><strong>Contacto:</strong> farias@umh.es</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Option B -->
+                <div class="bg-blue-800 rounded-xl p-8 border border-blue-700 shadow-xl">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-blue-500 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mr-3">B</span>
+                        <h3 class="text-xl font-bold">Tu Proyecto (TFM)</h3>
+                    </div>
+                    <ul class="space-y-4 text-blue-100">
+                        <li class="flex items-start">
+                            <span class="mr-2 text-blue-400">➤</span>
+                            <span>Vinculado al trabajo de grupo del Proyecto Final de Máster.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-blue-400">➤</span>
+                            <span><strong>Componentes:</strong>
+                                <ul class="ml-6 list-disc mt-2 text-blue-200 text-sm">
+                                    <li>Contenido/Producto del proyecto</li>
+                                    <li>Presentación del mismo</li>
+                                    <li>Investigación vinculada</li>
+                                </ul>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-2">Basado en la presentación "Herramientas datos e IA" del MPXA 2026.</p>
+            <p class="text-sm">Aplicación generada para facilitar la exploración de recursos docentes.</p>
+            <div class="mt-4 text-xs text-gray-600">
+                Félix Arias | farias@umh.es | @flxarias
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA STORE ---
+        // Information extracted from the report "herramientas_mpxa_2026.md" and PDF context.
+        const toolsData = [
+            {
+                id: 1,
+                name: "Flourish",
+                category: "Visualización",
+                desc: "Creación de gráficos interactivos, mapas y 'Data Storytelling'. Ideal para narrativas visuales elegantes sin código.",
+                complexity: 3, // 1-10
+                impact: 9,     // 1-10
+                tags: ["Gráficos", "Mapas", "No-Code"],
+                icon: "📊"
+            },
+            {
+                id: 2,
+                name: "Datawrapper",
+                category: "Visualización",
+                desc: "Mapas, tablas y gráficos rápidos con enfoque periodístico. Diseño limpio y responsive por defecto.",
+                complexity: 2,
+                impact: 8,
+                tags: ["Periodismo", "Tablas", "Rápido"],
+                icon: "📈"
+            },
+            {
+                id: 3,
+                name: "Tabula",
+                category: "Visualización",
+                desc: "Libera datos atrapados en PDFs. Extrae tablas de documentos PDF y las exporta a CSV o Excel.",
+                complexity: 4,
+                impact: 7,
+                tags: ["PDF", "Scraping", "Datos"],
+                icon: "🔓"
+            },
+            {
+                id: 4,
+                name: "OpenRefine",
+                category: "Visualización",
+                desc: "Limpieza de datos desordenados y normalización de bases de datos complejas. Potente para 'Data Wrangling'.",
+                complexity: 7,
+                impact: 8,
+                tags: ["Limpieza", "Bases de Datos", "Avanzado"],
+                icon: "🧹"
+            },
+            {
+                id: 5,
+                name: "ChatGPT (OpenAI)",
+                category: "IA & Edición",
+                desc: "Ideación, estructuración de textos, generación de código y análisis de información.",
+                complexity: 2,
+                impact: 10,
+                tags: ["LLM", "Texto", "Código"],
+                icon: "🤖"
+            },
+            {
+                id: 6,
+                name: "Antigravity",
+                category: "IA & Edición",
+                desc: "Plataforma para desarrollo de proyectos y experimentación con flujos de trabajo de IA.",
+                complexity: 6,
+                impact: 7,
+                tags: ["Experimentación", "Dev", "IA"],
+                icon: "🚀"
+            },
+            {
+                id: 7,
+                name: "Adobe Express",
+                category: "IA & Edición",
+                desc: "Creación rápida de contenido visual y web sencillas. Optimizado para redes sociales.",
+                complexity: 2,
+                impact: 6,
+                tags: ["Diseño", "Social", "Rápido"],
+                icon: "🎨"
+            },
+            {
+                id: 8,
+                name: "Shorthand",
+                category: "Distribución",
+                desc: "Herramienta de 'scrollytelling' premium. Crea reportajes inmersivos de alto impacto visual.",
+                complexity: 3,
+                impact: 10,
+                tags: ["Scrollytelling", "Multimedia", "Premium"],
+                icon: "📜"
+            },
+            {
+                id: 9,
+                name: "Medium",
+                category: "Distribución",
+                desc: "Plataforma de blogging minimalista. Ideal para artículos de opinión o reportajes textuales.",
+                complexity: 1,
+                impact: 6,
+                tags: ["Blog", "Texto", "Sencillo"],
+                icon: "📝"
+            },
+            {
+                id: 10,
+                name: "Notion",
+                category: "Organización",
+                desc: "Gestión de conocimiento, wikis, organización de proyectos y publicación de documentos.",
+                complexity: 4,
+                impact: 8,
+                tags: ["Wiki", "Gestión", "Docs"],
+                icon: "📓"
+            },
+            {
+                id: 11,
+                name: "Slack",
+                category: "Organización",
+                desc: "Comunicación interna de equipos. Centraliza la discusión en canales temáticos.",
+                complexity: 2,
+                impact: 7,
+                tags: ["Chat", "Equipo", "Comunicación"],
+                icon: "#️⃣"
+            },
+            {
+                id: 12,
+                name: "Discord",
+                category: "Organización",
+                desc: "Alternativa para gestión de comunidades y coordinación de proyectos, con voz y video.",
+                complexity: 3,
+                impact: 7,
+                tags: ["Comunidad", "Voz", "Chat"],
+                icon: "🎮"
+            },
+            {
+                id: 13,
+                name: "Trello",
+                category: "Organización",
+                desc: "Gestión de tareas visual mediante tableros Kanban. Simple y efectivo para flujos de trabajo.",
+                complexity: 2,
+                impact: 6,
+                tags: ["Kanban", "Tareas", "Visual"],
+                icon: "📋"
+            },
+            {
+                id: 14,
+                name: "IFTTT",
+                category: "Organización",
+                desc: "Automatización de tareas entre apps ('If This Then That'). Conecta servicios dispares.",
+                complexity: 5,
+                impact: 6,
+                tags: ["Automatización", "Conectividad"],
+                icon: "⚡"
+            },
+            {
+                id: 15,
+                name: "GitHub",
+                category: "Técnico/Hosting",
+                desc: "Repositorio de código y hosting gratuito (Pages). Estándar para control de versiones.",
+                complexity: 8,
+                impact: 9,
+                tags: ["Código", "Hosting", "Dev"],
+                icon: "🐙"
+            },
+            {
+                id: 16,
+                name: "Hostinger / Ionos",
+                category: "Técnico/Hosting",
+                desc: "Hosting profesional de pago y registro de dominios propios.",
+                complexity: 6,
+                impact: 5,
+                tags: ["Web", "Dominios", "Pago"],
+                icon: "🌐"
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentFilter = 'all';
+
+        // --- DOM ELEMENTS ---
+        const gridEl = document.getElementById('toolsGrid');
+        const btns = document.querySelectorAll('.filter-btn');
+
+        // --- RENDER FUNCTIONS ---
+        function renderTools(filter) {
+            gridEl.innerHTML = '';
+            
+            const filteredData = filter === 'all' 
+                ? toolsData 
+                : toolsData.filter(t => t.category === filter);
+
+            filteredData.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = `tool-card bg-white rounded-xl shadow border border-gray-100 p-6 flex flex-col h-full`;
+                
+                // Determine complexity color
+                let diffColor = 'text-green-600';
+                if(tool.complexity > 4) diffColor = 'text-yellow-600';
+                if(tool.complexity > 7) diffColor = 'text-red-600';
+
+                // Badges HTML
+                const badges = tool.tags.map(tag => 
+                    `<span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1 mb-1">${tag}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-3">${tool.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-900 leading-tight">${tool.name}</h3>
+                                <span class="text-xs text-blue-600 font-semibold uppercase tracking-wide">${tool.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 flex-grow">${tool.desc}</p>
+                    <div class="mb-4">
+                        ${badges}
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-xs font-medium">
+                        <div class="flex flex-col">
+                            <span class="text-gray-400">Dificultad</span>
+                            <span class="${diffColor}">Level ${tool.complexity}/10</span>
+                        </div>
+                        <div class="flex flex-col text-right">
+                            <span class="text-gray-400">Impacto</span>
+                            <span class="text-blue-900">Level ${tool.impact}/10</span>
+                        </div>
+                    </div>
+                `;
+                gridEl.appendChild(card);
+            });
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- CHART CONFIGURATION ---
+        function initChart() {
+            const ctx = document.getElementById('toolsScatterChart').getContext('2d');
+            
+            // Map data to chart format
+            const chartData = toolsData.map(t => ({
+                x: t.complexity,
+                y: t.impact,
+                tool: t // Store full object for tooltip/interaction
+            }));
+
+            // Category Colors for points
+            const catColors = {
+                "Visualización": '#3B82F6', // Blue
+                "IA & Edición": '#8B5CF6',  // Purple
+                "Organización": '#10B981',  // Green
+                "Distribución": '#F59E0B',  // Amber
+                "Técnico/Hosting": '#6B7280' // Gray
+            };
+
+            const pointBackgroundColors = toolsData.map(t => catColors[t.category] || '#000');
+
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Herramientas MPXA',
+                        data: chartData,
+                        backgroundColor: pointBackgroundColors,
+                        pointRadius: 8,
+                        pointHoverRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const t = context.raw.tool;
+                                    return `${t.name} (${t.category})`;
+                                },
+                                afterLabel: function(context) {
+                                    return `Dif: ${context.raw.x} | Impacto: ${context.raw.y}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                            padding: 10,
+                            cornerRadius: 8,
+                            titleFont: { family: 'Inter', size: 14 },
+                            bodyFont: { family: 'Inter', size: 12 }
+                        },
+                        annotation: { // Conceptual quadrant labels if plugin supported, simpler to use HTML text overlay or just axis labels
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Complejidad Técnica (Curva de Aprendizaje)', font: { weight: 'bold' } },
+                            min: 0,
+                            max: 11,
+                            grid: { color: '#f3f4f6' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Impacto Narrativo / Potencial', font: { weight: 'bold' } },
+                            min: 0,
+                            max: 11,
+                            grid: { color: '#f3f4f6' }
+                        }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const tool = chartData[index].tool;
+                            // Filter grid to show only this category or tool
+                            currentFilter = tool.category;
+                            updateActiveButton(currentFilter);
+                            renderTools(currentFilter);
+                            scrollToSection('explorer');
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        function updateActiveButton(filterName) {
+            btns.forEach(btn => {
+                if(btn.dataset.filter === filterName) {
+                    btn.classList.add('bg-gray-800', 'text-white', 'border-transparent');
+                    btn.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+                } else {
+                    btn.classList.remove('bg-gray-800', 'text-white', 'border-transparent');
+                    btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+                }
+            });
+        }
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                currentFilter = e.target.dataset.filter;
+                updateActiveButton(currentFilter);
+                renderTools(currentFilter);
+            });
+        });
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTools('all');
+            initChart();
+        });
+
+    </script>
+</body>
+</html>
